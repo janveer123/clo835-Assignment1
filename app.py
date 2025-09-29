@@ -1,31 +1,26 @@
-from flask import Flask, render_template
-import mysql.connector
+from flask import Flask
 import os
 
 app = Flask(__name__)
 
-DB_HOST = os.environ.get("DB_Host", "mysql")
-DB_USER = os.environ.get("DB_User", "root")
-DB_PASS = os.environ.get("DB_Password", "db_pass123")
-DB_NAME = os.environ.get("DB_Name", "mydb")
+# Read BACKGROUND color from environment variable (default = white)
+COLOR = os.environ.get("BACKGROUND", "white")
+
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask Color App</title>
+</head>
+<body style="background-color: {color}; text-align: center; padding-top: 50px;">
+    <h1 style="color: white;">This is the {color} container!</h1>
+</body>
+</html>
+"""
 
 @app.route("/")
 def index():
-    try:
-        conn = mysql.connector.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            password=DB_PASS,
-            database=DB_NAME
-        )
-        cursor = conn.cursor()
-        cursor.execute("SELECT 'Hello from MySQL!'")
-        result = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        return f"<h1>Flask is running!</h1><p>{result[0]}</p>"
-    except Exception as e:
-        return f"<h1>Flask is running!</h1><p>Error: {str(e)}</p>"
+    return HTML_TEMPLATE.format(color=COLOR)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

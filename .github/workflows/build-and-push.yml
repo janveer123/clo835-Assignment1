@@ -1,0 +1,39 @@
+name: Build and push to ECR
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build & push Webapp image
+        run: |
+          WEB_URI=${{ secrets.ECR_WEB_URI }}
+          docker build -t webapp:latest .
+          docker tag webapp:latest $WEB_URI:latest
+          docker push $WEB_URI:latest
+
+      - name: Push MySQL image (official re-tag)
+        run: |
+          MYSQL_URI=${{ secrets.ECR_MYSQL_URI }}
+          docker pull mysql:8.0
+          docker tag mysql:8.0 $MYSQL_URI:latest
+          docker push $MYSQL_URI:latest

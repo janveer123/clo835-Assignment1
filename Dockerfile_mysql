@@ -1,6 +1,5 @@
 FROM mysql:8.0
 
-# Copy initialization SQL
-COPY ./mysql.sql /docker-entrypoint-initdb.d/
+COPY ./mysql.sql /tmp
 
-# MySQL will auto-run any scripts in /docker-entrypoint-initdb.d/
+CMD [ "mysqld", "--init-file=/tmp/mysql.sql" ]
